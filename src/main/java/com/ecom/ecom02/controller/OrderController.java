@@ -3,7 +3,6 @@ package com.ecom.ecom02.controller;
 import com.ecom.ecom02.dto.OrderRequest;
 import com.ecom.ecom02.entity.Order;
 import com.ecom.ecom02.service.OrderService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,10 +10,13 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
-@RequiredArgsConstructor
 public class OrderController {
 
     private final OrderService orderService;
+
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
+    }
 
     @GetMapping
     public List<Order> getAllOrders() {

@@ -5,7 +5,6 @@ import com.ecom.ecom02.entity.Order;
 import com.ecom.ecom02.entity.OrderItem;
 import com.ecom.ecom02.entity.Product;
 import com.ecom.ecom02.repository.OrderRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,11 +14,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductService productService;
+
+    public OrderService(OrderRepository orderRepository, ProductService productService) {
+        this.orderRepository = orderRepository;
+        this.productService = productService;
+    }
 
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
