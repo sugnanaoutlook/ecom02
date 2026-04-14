@@ -10,6 +10,10 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    permissions:
+      checks: write            # publish test results as a GitHub Check
+      pull-requests: write     # post summary comment on the PR
+      contents: read           # checkout the repo
 
     steps:
       - name: Checkout code
@@ -31,6 +35,16 @@ jobs:
 
       - name: Run tests
         run: mvn test
+
+      - name: Publish JUnit test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: target/surefire-reports/**/*.xml
+          check_name: JUnit Test Results
+          comment_title: Test Results
+          fail_on: test failures
+          comment_mode: always
 
       - name: Upload test reports
         if: always()
