@@ -79,12 +79,21 @@ jobs:
       - name: Build with Maven
         run: mvn package -DskipTests
 
-      - name: Upload JAR artifact
+      - name: Verify JAR was created
+        run: |
+          echo "=== Built JAR files ==="
+          ls -lh target/*.jar
+          echo "JAR_NAME=$(basename target/*.jar)" >> $GITHUB_ENV
+
+      - name: Upload Spring Boot JAR artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: app-jar
+          name: ${{ env.JAR_NAME }}-${{ github.run_number }}
           path: target/*.jar
           retention-days: 7
+          compression-level: 0
+          if-no-files-found: error
 
   code-quality:
     name: Code Quality
