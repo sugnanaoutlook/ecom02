@@ -79,19 +79,12 @@ jobs:
       - name: Build with Maven
         run: mvn package -DskipTests
 
-      - name: Verify JAR was created
-        run: |
-          echo "=== Built JAR files ==="
-          ls -lh target/*.jar
-          echo "JAR_NAME=$(basename target/*.jar)" >> $GITHUB_ENV
-
-      - name: Upload Spring Boot JAR artifact
-        if: success()
+      - name: Stage JAR for publish job
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.JAR_NAME }}-${{ github.run_number }}
+          name: jar-staging
           path: target/*.jar
-          retention-days: 7
+          retention-days: 1
           compression-level: 0
           if-no-files-found: error
 
@@ -128,3 +121,36 @@ jobs:
           name: verify-reports
           path: target/site/
           retention-days: 7
+
+  publish-artifact:
+    name: Publish JAR Artifact
+    runs-on: ubuntu-latest
+    needs: [ build, code-quality ]
+
+    steps:
+      - name: Download staged JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: jar-staging
+          path: artifacts/
+
+      - name: Inspect JAR
+        run: |
+          echo "=== Spring Boot JAR details ==="
+          ls -lh artifacts/
+          JAR_FILE=$(ls artifacts/*.jar)
+          JAR_NAME=$(basename "$JAR_FILE")
+          JAR_SIZE=$(du -sh "$JAR_FILE" | cut -f1)
+          echo "File : $JAR_NAME"
+          echo "Size : $JAR_SIZE"
+          echo "SHA256: $(sha256sum "$JAR_FILE" | cut -d' ' -f1)"
+          echo "JAR_NAME=$JAR_NAME" >> $GITHUB_ENV
+
+      - name: Upload Spring Boot JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.JAR_NAME }}-build-${{ github.run_number }}
+          path: artifacts/*.jar
+          retention-days: 7
+          compression-level: 0
+          if-no-files-found: error
